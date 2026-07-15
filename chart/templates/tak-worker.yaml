@@ -21,6 +21,7 @@ spec:
       containers:
         - name: tak-worker
           image: {{ .Values.takWorker.image }}
+          imagePullPolicy: IfNotPresent
           command: ["python", "task_worker.py"]
           env:
             - name: PYTHONUNBUFFERED

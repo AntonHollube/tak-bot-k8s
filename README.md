@@ -60,6 +60,15 @@ Reverse-Proxy-Lösung wie nginx-proxy-manager). Grafana wird per `NodePort`
 exponiert und über den bestehenden Reverse-Proxy auf eine neue Subdomain
 gemappt – kein zweiter Ingress-/TLS-Stack nötig.
 
+**Image-Distribution:** `tak-worker` wird lokal aus dem `Dockerfile.bot` des
+[tak-bot](https://github.com/AntonHollube/tak-bot)-Repos gebaut und für diesen
+Single-Node-Cluster direkt per `docker save | k3s ctr images import` in die
+containerd-Instanz von k3s geladen (`imagePullPolicy: IfNotPresent`) – ohne
+Umweg über eine Registry. Das ist für einen einzelnen Node ausreichend und
+vermeidet unnötige Registry-Abhängigkeiten; sobald mehrere Nodes im Spiel sind
+(z. B. auf GKE), braucht jeder Node Zugriff auf dasselbe Image, dann wird ein
+echter Registry-Push (`ghcr.io`) nötig – siehe Roadmap.
+
 ## Roadmap
 
 Nächste logische Schritte, um exakt auf den Kubernetes/GCP/Terraform/Helm-Stack
