@@ -1,0 +1,56 @@
+# Nachbau von docker-compose "tak-db": frische, eigenstaendige Instanz (nicht die Produktiv-DB).
+# StatefulSet statt Deployment, weil die DB eine stabile Identitaet + persistentes Volume braucht.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tak-db
+  labels:
+    app: tak-db
+spec:
+  serviceName: tak-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tak-db
+  template:
+    metadata:
+      labels:
+        app: tak-db
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: tak-db-secret
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.postgres.storageSize }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tak-db
+spec:
+  clusterIP: None
+  selector:
+    app: tak-db
+  ports:
+    - port: 5432
+      targetPort: 5432

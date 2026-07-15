@@ -1,0 +1,74 @@
+# Nachbau von docker-compose "tak-server": vollstaendig modelliert, aber standardmaessig
+# deaktiviert (values.takServer.enabled=false). Begruendung siehe README.md
+# ("Warum tak-server/tak-bot deaktiviert sind") - eine zweite lizenzierte
+# TAK-Server-Instanz mit eigener mTLS-PKI ist ein eigenstaendiges Folgeprojekt.
+{{- if .Values.takServer.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tak-server-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ .Values.takServer.storageSize }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tak-server
+  labels:
+    app: tak-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tak-server
+  template:
+    metadata:
+      labels:
+        app: tak-server
+    spec:
+      containers:
+        - name: tak-server
+          image: {{ .Values.takServer.image }}
+          ports:
+            - containerPort: 8089
+            - containerPort: 8443
+            - containerPort: 8444
+            - containerPort: 8446
+          volumeMounts:
+            - name: data
+              mountPath: /opt/tak
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: tak-server-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tak-server
+spec:
+  selector:
+    app: tak-server
+  ports:
+    - name: cot-stream
+      port: 8089
+      targetPort: 8089
+    - name: api
+      port: 8443
+      targetPort: 8443
+    - name: fed
+      port: 8444
+      targetPort: 8444
+    - name: admin
+      port: 8446
+      targetPort: 8446
+{{- end }}

@@ -1,0 +1,28 @@
+postgres:
+  image: postgis/postgis:15-3.4-alpine
+  storageSize: 2Gi
+  # frisches Passwort, unabhaengig von der Produktiv-DB
+  password: "changeme-demo-password"
+
+grafana:
+  image: grafana/grafana:latest
+  storageSize: 1Gi
+  adminPassword: "changeme-demo-password"
+  service:
+    type: NodePort
+    nodePort: 30080
+
+takWorker:
+  enabled: true
+  image: ghcr.io/antonhollube/tak-worker:latest
+
+# Zweite, lizenzierte TAK-Server-Instanz + Bot: bewusst vorerst deaktiviert.
+# Siehe README.md ("Warum tak-server/tak-bot deaktiviert sind").
+takServer:
+  enabled: false
+  image: ghcr.io/antonhollube/tak-server:latest
+  storageSize: 5Gi
+
+takBot:
+  enabled: false
+  image: ghcr.io/antonhollube/tak-worker:latest

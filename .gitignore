@@ -1,0 +1,9 @@
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Helm
+chart/charts/
+*.tgz
